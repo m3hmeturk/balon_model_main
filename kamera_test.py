@@ -4,7 +4,7 @@ from ultralytics import YOLO
 def ana_fonksiyon():
     # 1. Eğittiğimiz o harika beyni yüklüyoruz!
     # Uyarı: Eğer terminalde 'train2' veya 'train3' içine kaydettim derse, buradaki yolu ona göre güncelle.
-    model_yolu = "runs/detect/train/weights/best.pt"
+    model_yolu = "runs/detect/train3/weights/best.pt"
     model = YOLO(model_yolu)
 
     # 2. Bilgisayarın kamerasını başlatıyoruz (0 genelde laptop'ın kendi kamerasıdır)
@@ -12,23 +12,27 @@ def ana_fonksiyon():
 
     print("--- KAMERA AÇILIYOR... ---")
     print("Çıkmak ve kamerayı kapatmak için klavyeden 'q' tuşuna basın.")
-
+    
     while True:
         # Kameradan anlık kareyi (frame) al
         basarili_mi, kare = kamera.read()
         if not basarili_mi:
             print("Kameradan görüntü okunamadı!")
             break
-
+        # GÖRÜNTÜYÜ DÜZELTME (FLIP)
+        # 1  = Sadece Sağ-Sol çevirir (Ayna modu)
+        # 0  = Sadece Alt-Üst çevirir
+        # -1 = Hem Sağ-Sol hem Alt-Üst çevirir (Senin ihtiyacın olan bu)
+        kare = cv2.flip(kare, 1)
         # 3. Alınan kareyi yapay zekaya ver ve balon var mı diye sor!
         # conf=0.5 demek: "Sadece %50 ve üzeri eminsen hedefi işaretle" (Hatalı atışları önler)
-        sonuclar = model.predict(kare, conf=0.5, verbose=False)
+        sonuclar = model.predict(kare, conf=0.80, verbose=False)
 
         # 4. Yapay zekanın bulduğu hedeflerin üzerine kutu çizilmiş halini al
         cizilmis_kare = sonuclar[0].plot()
 
         # 5. Ekranda göster (TEKNOFEST havası katalım pencere adına!)
-        cv2.imshow("MIGFER-AI Hedef Tespiti (Balon)", cizilmis_kare)
+        cv2.imshow("Hedef Tespiti (Balon)", cizilmis_kare)
 
         # 'q' tuşuna basılırsa döngüden çık
         if cv2.waitKey(1) & 0xFF == ord('q'):
